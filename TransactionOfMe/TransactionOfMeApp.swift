@@ -25,7 +25,6 @@ struct TransactionOfMeApp: App {
 
     var body: some Scene {
         WindowGroup {
-//            ContentView()
             TransactionListView()
         }
         .modelContainer(sharedModelContainer)
