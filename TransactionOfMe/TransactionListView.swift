@@ -13,13 +13,13 @@ struct TransactionListView: View {
     
     // 默认时间范围设置为过去一年，避免未来数据
     @State private var startDate = Calendar.current.date(byAdding: .month, value: -1, to: Date()) ?? Date()
-    @State private var endDate = Date()
+    @State private var endDate = Calendar.current.date(byAdding: .day, value: 2, to: Date()) ?? Date()
     @State private var selectedProductID: String = "All"
     
     private let productIDOptions = [
         "Me.LifeTimeRro": "永久会员",
         "Me.Monthly.Pro": "月度",
-        "Me.Yearly.Pro": "年度",
+        "Me.Annual.Pro": "年度",
         "All": "全部"
     ]
     
@@ -60,15 +60,18 @@ struct TransactionListView: View {
                 }
                 .padding()
                 HStack{
-                    Text("共有记录： \(transactions.count) 条")
+                    let month = transactions.filter{$0.productID == "Me.Monthly.Pro" && $0.price != 0}
+                    let year = transactions.filter{$0.productID == "Me.Annual.Pro" && $0.price != 0}
+                    let lifeTime = transactions.filter{$0.productID == "Me.LifeTimeRro" && $0.price != 0}
+                    Text("共有记录：\(transactions.count) 条(月度\(month.count)，年度\(year.count)，永久\(lifeTime.count))")
                         .font(.system(size: 10))
                         .foregroundStyle(Color.gray)
-                    if selectedProductID ==  "Me.LifeTimeRro"{
-                        let money = Double(transactions.count) * 57.8
-                        Text("收入： 约\(money, specifier: "%.1f")元")
-                            .font(.system(size: 10))
-                            .foregroundStyle(Color.gray)
-                    }
+                    let money = (Double(lifeTime.count) * 68) + (Double(year.count) * 48) + (Double(month.count) * 5)
+                    Divider()
+                        .frame(height:10)
+                    Text("收入： 约\(money * 0.85, specifier: "%.1f")元")
+                        .font(.system(size: 10))
+                        .foregroundStyle(Color.gray)
                 }
                 
                 if transactionService.isLoading {
@@ -104,6 +107,7 @@ struct TransactionListView: View {
                     List(transactions) { transaction in
                         TransactionRow(transaction: transaction)
                     }
+                    .padding(.top,0)
                 }
             }
             .navigationTitle("交易记录")
